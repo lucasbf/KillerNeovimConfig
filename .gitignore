@@ -1,0 +1,25 @@
+# Arquivos do sistema
+.DS_Store
+
+# Artefatos temporários do Neovim
+*.swp
+*.swo
+*.swn
+*.tmp
+*.un~
+Session.vim
+tags
+
+# Caches/compilados gerados por plugins e ferramentas Lua
+lazy/
+pack/
+site/
+mason/
+plugin/packer_compiled.lua
+*.luacheckcache
+*.luac
+luac.out
+
+# Diretórios de backup/undo, caso sejam criados dentro do repo
+backup/
+undo/
