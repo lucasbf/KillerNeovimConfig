@@ -1,4 +1,4 @@
-# Configuração Neovim de lucasbf
+# Configuração Neovim do Lucas Baggio Figueira
 
 Setup de Neovim baseado em `lazy.nvim`, focado em produtividade para Lua, Python e C/C++ com LSP, Treesitter, fuzzy finder, depuração e uma UI mais polida.
 
