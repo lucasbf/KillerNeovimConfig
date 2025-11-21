@@ -27,7 +27,7 @@ return {
         elseif env ~= nil then
           cmd = env .. "/bin/python"
         else
-          cmd = "/Users/lucasbf/.pyenv/shims/python"
+          cmd = vim.fn.expand("~/.pyenv/shims/python")
         end
 
         if config.request == "attach" then
@@ -71,7 +71,7 @@ return {
             elseif env ~= nil then
               return env .. "/bin/python"
             else
-              return "/Users/lucasbf/.pyenv/shims/python"
+              return vim.fn.expand("~/.pyenv/shims/python")
             end
           end,
         },
@@ -79,7 +79,7 @@ return {
       -- C/C++ (via lldb-dap)
       dap.adapters.lldb = {
         type = "executable",
-        command = "/usr/local/opt/llvm/bin/lldb-dap", -- adjust as needed, must be absolute path
+        command = "lldb-dap", -- use PATH-resolved binary instead of absolute path
         name = "lldb",
       }
       dap.configurations.cpp = {
@@ -99,23 +99,6 @@ return {
       dap.configurations.rust = dap.configurations.cpp
     end,
   },
-  --[[
-  {
-    "mfussenegger/nvim-dap-python",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-    },
-    config = function()
-      -- Python DAP
-      local env = os.getenv("VIRTUAL_ENV")
-      if env == nil then
-        require("dap-python").setup("/Users/lucasbf/.pyenv/shims/python")
-      else
-        require("dap-python").setup(env .. "/bin/python")
-      end
-    end,
-  },
-  ]]
   {
     "rcarriga/nvim-dap-ui",
     dependencies = {
