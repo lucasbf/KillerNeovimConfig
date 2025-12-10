@@ -23,3 +23,4 @@ luac.out
 # Diretórios de backup/undo, caso sejam criados dentro do repo
 backup/
 undo/
+*.json

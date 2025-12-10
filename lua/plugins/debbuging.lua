@@ -6,15 +6,44 @@ return {
     dependencies = {},
     config = function()
       local dap = require("dap")
+
+      local function pick_dap_config()
+        local ft = vim.bo.filetype
+        local configs = dap.configurations[ft]
+
+        if not configs or vim.tbl_isempty(configs) then
+          vim.notify("Nenhuma configuração DAP para filetype: " .. ft, vim.log.levels.ERROR)
+          return
+        end
+
+        vim.ui.select(configs, {
+          prompt = "Escolha a configuração DAP:",
+          format_item = function(item)
+            return item.name
+          end,
+        }, function(choice)
+          if choice then
+            dap.run(choice)
+          end
+        end)
+      end
       dap.set_log_level("ERROR")
       -- Keymaps
-      vim.keymap.set("n", "<Leader>dt", function()
+      vim.keymap.set("n", "<leader>db", function()
         dap.toggle_breakpoint()
       end)
-      vim.keymap.set("n", "<F5>", function()
-        dap.continue()
+      --vim.keymap.set("n", "<F5>", function()
+      --  dap.continue()
+      --end)
+      vim.keymap.set("n", "<F5>", pick_dap_config, { desc = "Selecionar configuração DAP e iniciar" })
+      vim.keymap.set("n", "<leader>dc", function()
+        dap.run_to_cursor()
       end)
-
+      vim.keymap.set("n", "<leader>dt", function()
+        dap.terminate()
+      end)
+      
+      --[[
       -- Python DAP
       dap.adapters.python = function(cb, config)
         local cwd = vim.fn.getcwd()
@@ -97,7 +126,91 @@ return {
       }
       dap.configurations.c = dap.configurations.cpp
       dap.configurations.rust = dap.configurations.cpp
+      ]]
     end,
+  },
+  {
+    "jay-babu/mason-nvim-dap.nvim",
+    ---@type MasonNvimDapSettings
+    opts = {
+      -- This line is essential to making automatic installation work
+      -- :exploding-brain
+      handlers = {},
+      automatic_installation = {
+        -- These will be configured by separate plugins.
+        exclude = {
+          "python",
+        },
+      },
+      -- DAP servers: Mason will be invoked to install these if necessary.
+      ensure_installed = {
+        "bash",
+        "codelldb",
+        "python",
+      },
+    },
+    dependencies = {
+      "mfussenegger/nvim-dap",
+      "williamboman/mason.nvim",
+    },
+  },
+  {
+    "mfussenegger/nvim-dap-python",
+    config = function()
+      -- Detecta o Python do projeto
+      local cwd = vim.fn.getcwd()
+      local python
+
+      if vim.fn.executable(cwd .. "/.venv/bin/python") == 1 then
+        python = cwd .. "/.venv/bin/python"
+      elseif vim.fn.executable(cwd .. "/venv/bin/python") == 1 then
+        python = cwd .. "/venv/bin/python"
+      else
+        -- fallback: python “global” (pyenv, etc)
+        python = vim.fn.exepath("python")
+      end
+      
+      print(python)
+
+      require("dap-python").setup(python)
+      --local python = vim.fn.expand("~/.local/share/nvim/mason/packages/debugpy/venv/bin/python")
+      --require("dap-python").setup(python)
+      local dap = require("dap")
+      local project_root = vim.fn.getcwd()
+      -- Config extra: Flask
+      table.insert(dap.configurations.python, {
+        type = "python",
+        request = "launch",
+        name = "Flask Debug",
+        module = "flask",
+        cwd = project_root,
+        env = {
+          FLASK_APP = "wsgi.py",
+          FLASK_ENV = "development",
+          PYTHONPATH = project_root,
+        },
+        args = {
+          "run",
+          "--debug",
+          "--host", "0.0.0.0",
+          "--port", "5002",
+        },
+        console = "integratedTerminal",
+        justMyCode = false,
+      })
+    end,
+    -- Consider the mappings at
+    -- https://github.com/mfussenegger/nvim-dap-python?tab=readme-ov-file#mappings
+    dependencies = {
+      "mfussenegger/nvim-dap",
+    },
+  },
+  {
+    "theHamsta/nvim-dap-virtual-text",
+    config = true,
+    dependencies = {
+      "mfussenegger/nvim-dap",
+    },
   },
   {
     "rcarriga/nvim-dap-ui",
@@ -116,12 +229,18 @@ return {
       dap.listeners.before.launch.dapui_config = function()
         dapui.open()
       end
+      vim.keymap.set("n", "<leader>dx", function()
+        dap.terminate()
+        dapui.close()
+      end)
+      --[[
       dap.listeners.before.event_terminated.dapui_config = function()
         dapui.close()
       end
       dap.listeners.before.event_exited.dapui_config = function()
         dapui.close()
       end
+      ]]
     end,
   },
 }
